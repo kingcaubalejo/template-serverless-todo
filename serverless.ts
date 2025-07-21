@@ -2,12 +2,12 @@ import type { AWS } from '@serverless/typescript';
 import { createTodo, getTodo, getAllTodos, updateTodo, deleteTodo } from '@functions/todo';
 
 const serverlessConfiguration: AWS = {
-  service: 'poemhub-server-api',
+  service: 'template-server-api',
   frameworkVersion: '3',
   plugins: ['serverless-esbuild', 'serverless-offline', 'serverless-dynamodb'],
   provider: {
     name: 'aws',
-    runtime: 'nodejs16.x',
+    runtime: 'nodejs20.x',
     region: 'ap-southeast-1',
     apiGateway: {
       minimumCompressionSize: 1024,
@@ -44,7 +44,7 @@ const serverlessConfiguration: AWS = {
       minify: false,
       sourcemap: true,
       exclude: ['aws-sdk'],
-      target: 'node16',
+      target: 'node20',
       define: { 'require.resolve': undefined },
       platform: 'node',
       concurrency: 10,
