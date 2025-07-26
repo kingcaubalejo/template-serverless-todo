@@ -12,27 +12,6 @@ export const getAllTodos = middyfy(async (): Promise<APIGatewayProxyResult> => {
     });
 });
 
-export const createTodo = middyfy(async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    try {
-        const id = v4();
-        const todo = await todosService.createTodo({
-            todosId: id,
-            title: event.body.title,
-            description: event.body.description,
-            createdAt: new Date().toISOString(),
-            status: false
-        })
-        return formatJSONResponse({
-            todo
-        });
-    } catch (e) {
-        return formatJSONResponse({
-            status: 500,
-            message: e
-        });
-    }
-});
-
 export const getTodo = middyfy(async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const id = event.pathParameters.id;
     try {
@@ -47,6 +26,28 @@ export const getTodo = middyfy(async (event: APIGatewayProxyEvent): Promise<APIG
         });
     }
 });
+
+export const createTodo = middyfy(async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+    try {
+        const id = v4();
+        const todo = await todosService.createTodo({
+            todosId: id,
+            title: event.body.name,
+            description: event.body.description,
+            createdAt: new Date().toISOString(),
+            status: false
+        });
+        return formatJSONResponse({
+            todo
+        });
+    } catch (e) {
+        return formatJSONResponse({
+            status: 500,
+            message: e
+        });
+    }
+});
+
 
 export const updateTodo = middyfy(async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const id = event.pathParameters.id;

@@ -12,11 +12,12 @@
     "npm": ">=8.0.0"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.848.0",
     "@middy/core": "^3.4.0",
     "@middy/http-json-body-parser": "^3.4.0",
-    "aws-sdk": "^2.1692.0",
     "serverless-dynamodb": "^0.2.56",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "zod": "^4.0.5"
   },
   "devDependencies": {
     "@serverless/typescript": "^3.38.0",

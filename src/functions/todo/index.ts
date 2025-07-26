@@ -11,18 +11,6 @@ export const getAllTodos = {
     ],
 }
 
-export const createTodo = {
-    handler: `${handlerPath(__dirname)}/handler.createTodo`,
-    events: [
-        {
-            http: {
-                method: 'post',
-                path: 'todo',
-            },
-        },
-    ],
-};
-
 export const getTodo = {
     handler: `${handlerPath(__dirname)}/handler.getTodo`,
     events: [
@@ -35,26 +23,40 @@ export const getTodo = {
     ],
 };
 
-export const updateTodo = {
-    handler: `${handlerPath(__dirname)}/handler.updateTodo`,
+export const createTodo = {
+    handler: `${handlerPath(__dirname)}/handler.createTodo`,
     events: [
         {
             http: {
-                method: 'put',
-                path: 'todo/{id}',
+                method: 'post',
+                path: 'todo',
             },
         },
     ],
 };
 
-export const deleteTodo = {
-    handler: `${handlerPath(__dirname)}/handler.deleteTodo`,
-    events: [
-        {
-            http: {
-                method: 'delete',
-                path: 'todo/{id}',
-            },
-        },
-    ],
-};
+
+
+// export const updateTodo = {
+//     handler: `${handlerPath(__dirname)}/handler.updateTodo`,
+//     events: [
+//         {
+//             http: {
+//                 method: 'put',
+//                 path: 'todo/{id}',
+//             },
+//         },
+//     ],
+// };
+
+// export const deleteTodo = {
+//     handler: `${handlerPath(__dirname)}/handler.deleteTodo`,
+//     events: [
+//         {
+//             http: {
+//                 method: 'delete',
+//                 path: 'todo/{id}',
+//             },
+//         },
+//     ],
+// };
