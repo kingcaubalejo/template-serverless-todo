@@ -49,14 +49,14 @@ export const updateTodo = {
     ],
 };
 
-// export const deleteTodo = {
-//     handler: `${handlerPath(__dirname)}/handler.deleteTodo`,
-//     events: [
-//         {
-//             http: {
-//                 method: 'delete',
-//                 path: 'todo/{id}',
-//             },
-//         },
-//     ],
-// };
+export const deleteTodo = {
+    handler: `${handlerPath(__dirname)}/handler.deleteTodo`,
+    events: [
+        {
+            http: {
+                method: 'delete',
+                path: 'todo/{id}',
+            },
+        },
+    ],
+};

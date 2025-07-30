@@ -1,4 +1,4 @@
-import { ScanCommand, QueryCommand, PutItemCommand, PutItemCommandInput, PutItemCommandOutput, UpdateItemCommand, UpdateItemCommandInput, UpdateItemCommandOutput } from "@aws-sdk/client-dynamodb";
+import { ScanCommand, QueryCommand, PutItemCommand, PutItemCommandInput, PutItemCommandOutput, UpdateItemCommand, UpdateItemCommandInput, UpdateItemCommandOutput, DeleteItemCommand, DeleteItemCommandOutput, DeleteItemCommandInput } from "@aws-sdk/client-dynamodb";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { z } from "zod";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
@@ -34,15 +34,15 @@ export class TodoRepository {
     async get(todoId: string): Promise<Todo> {
         const input = {
             ExpressionAttributeValues: {
-              ":a": {
+              ":todoId": {
                 S: todoId
               }
             },
-            KeyConditionExpression: "todoId = :v1",
+            KeyConditionExpression: "todosId = :todoId",
             TableName: this.tableName
           };
       const result = await this.docClient.send(new QueryCommand(input));
-      return this.mapFromDynamo(result.Items);
+      return this.mapFromDynamo(result.Items[0]);
     }
 
     async createTodo(todo: Todo): Promise<any> {
@@ -79,7 +79,6 @@ export class TodoRepository {
         },
         ReturnValues: "ALL_NEW", 
       };
-      console.info(`[3]Todo UpdateInputCommand: ${JSON.stringify(params)}`);
     
       try {
         const command = new UpdateItemCommand(params);
@@ -93,7 +92,17 @@ export class TodoRepository {
     }
     
     async deleteTodo(id: string): Promise<any> {
-      return
+      const input: DeleteItemCommandInput = {
+        Key: {
+          todosId: {
+            S: id
+          },
+        },
+        TableName: this.tableName
+      };
+      const command = new DeleteItemCommand(input);
+      const response: DeleteItemCommandOutput = await this.docClient.send(command);
+      return response;
     }
     // Add other methods like getById, create, update, delete...
   }

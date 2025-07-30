@@ -19,19 +19,12 @@ export default class TodoService {
         return item;
     }
 
-
-
     async updateTodo(id: string, todo: Partial<Todo>): Promise<Todo> {
         const updated = await this.repo.updateTodo(id, todo);
         return updated;
     }
 
-    // async deleteTodo(id: string): Promise<any> {
-    //     return await this.docClient.delete({
-    //         TableName: this.Tablename,
-    //         Key: {
-    //             todosId: id
-    //         }
-    //     }).promise();
-    // }
+    async deleteTodo(id: string): Promise<any> {
+        return await this.repo.deleteTodo(id);
+    }
 }
