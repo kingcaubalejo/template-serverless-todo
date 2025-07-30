@@ -1,6 +1,6 @@
 {
   "name": "template-server-api",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "description": "Serverless aws-nodejs-typescript template",
   "main": "serverless.ts",
   "scripts": {
