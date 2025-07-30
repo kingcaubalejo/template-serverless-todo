@@ -37,17 +37,17 @@ export const createTodo = {
 
 
 
-// export const updateTodo = {
-//     handler: `${handlerPath(__dirname)}/handler.updateTodo`,
-//     events: [
-//         {
-//             http: {
-//                 method: 'put',
-//                 path: 'todo/{id}',
-//             },
-//         },
-//     ],
-// };
+export const updateTodo = {
+    handler: `${handlerPath(__dirname)}/handler.updateTodo`,
+    events: [
+        {
+            http: {
+                method: 'put',
+                path: 'todo/{id}',
+            },
+        },
+    ],
+};
 
 // export const deleteTodo = {
 //     handler: `${handlerPath(__dirname)}/handler.deleteTodo`,

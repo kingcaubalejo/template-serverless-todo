@@ -1,4 +1,4 @@
-import { ScanCommand, QueryCommand, PutItemCommand, PutItemCommandInput, PutItemCommandOutput } from "@aws-sdk/client-dynamodb";
+import { ScanCommand, QueryCommand, PutItemCommand, PutItemCommandInput, PutItemCommandOutput, UpdateItemCommand, UpdateItemCommandInput, UpdateItemCommandOutput } from "@aws-sdk/client-dynamodb";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { z } from "zod";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
@@ -62,6 +62,38 @@ export class TodoRepository {
         return result.$metadata;
     }
 
-  
+    async updateTodo(id: string, todo: Partial<Todo>): Promise<any> {
+      const params: UpdateItemCommandInput = {
+        TableName: this.tableName,
+        Key: {
+          todosId: { S: id },
+        },
+        UpdateExpression: "SET #title = :name, #description = :description",
+        ExpressionAttributeNames: {
+          "#title": "title",
+          "#description": "description",
+        },
+        ExpressionAttributeValues: {
+          ":name": { S: todo.title }, 
+          ":description": { S: todo.description },
+        },
+        ReturnValues: "ALL_NEW", 
+      };
+      console.info(`[3]Todo UpdateInputCommand: ${JSON.stringify(params)}`);
+    
+      try {
+        const command = new UpdateItemCommand(params);
+        const data: UpdateItemCommandOutput = await this.docClient.send(command);
+        console.info("Item updated successfully:", data);
+        return data;
+      } catch (error) {
+        console.error("Error updating item:", error);
+        throw error;
+      }
+    }
+    
+    async deleteTodo(id: string): Promise<any> {
+      return
+    }
     // Add other methods like getById, create, update, delete...
   }
