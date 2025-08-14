@@ -25,6 +25,10 @@ export const formatJSONResponse = <T>(data: T, statusCode: number = 200): APIGat
     statusCode,
     headers: {
       'Content-Type': 'application/json',
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'X-XSS-Protection': '1; mode=block',
+      'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Credentials': true,
     },
@@ -46,6 +50,10 @@ export const formatErrorResponse = (error: Error | string, statusCode: number = 
     statusCode,
     headers: {
       'Content-Type': 'application/json',
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'X-XSS-Protection': '1; mode=block',
+      'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Credentials': true,
     },
@@ -71,6 +79,10 @@ export const formatCORSResponse = (): APIGatewayProxyResult => {
   return {
     statusCode: 200,
     headers: {
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'X-XSS-Protection': '1; mode=block',
+      'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
       'Access-Control-Allow-Methods': 'OPTIONS,POST,GET,PUT,DELETE',
