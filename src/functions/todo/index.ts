@@ -35,8 +35,6 @@ export const createTodo = {
     ],
 };
 
-
-
 export const updateTodo = {
     handler: `${handlerPath(__dirname)}/handler.updateTodo`,
     events: [
@@ -56,6 +54,30 @@ export const deleteTodo = {
             http: {
                 method: 'delete',
                 path: 'todo/{id}',
+            },
+        },
+    ],
+};
+
+export const toggleTodoStatus = {
+    handler: `${handlerPath(__dirname)}/handler.toggleTodoStatus`,
+    events: [
+        {
+            http: {
+                method: 'patch',
+                path: 'todo/{id}/toggle',
+            },
+        },
+    ],
+};
+
+export const searchTodos = {
+    handler: `${handlerPath(__dirname)}/handler.searchTodos`,
+    events: [
+        {
+            http: {
+                method: 'get',
+                path: 'todo/search',
             },
         },
     ],

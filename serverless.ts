@@ -1,5 +1,5 @@
 import type { AWS } from '@serverless/typescript';
-import { createTodo, updateTodo, getTodo, getAllTodos, deleteTodo } from '@functions/todo';
+import { createTodo, updateTodo, getTodo, getAllTodos, deleteTodo, toggleTodoStatus, searchTodos } from '@functions/todo';
 
 const serverlessConfiguration: AWS = {
   service: 'template-server-api',
@@ -30,12 +30,15 @@ const serverlessConfiguration: AWS = {
             "dynamodb:UpdateItem",
             "dynamodb:DeleteItem",
           ],
-          Resource: "arn:aws:dynamodb:ap-southeast-1:*:table/TodosTable",
+          Resource: [
+            "arn:aws:dynamodb:ap-southeast-1:*:table/TodosTable",
+            "arn:aws:dynamodb:ap-southeast-1:*:table/FeatureFlagsTable"
+          ],
         }],
       },
     },
   },
-  functions: { createTodo, updateTodo, deleteTodo, getTodo, getAllTodos },
+  functions: { createTodo, updateTodo, deleteTodo, getTodo, getAllTodos, toggleTodoStatus, searchTodos },
   package: { individually: true },
   custom: {
     esbuild: {
@@ -75,7 +78,40 @@ const serverlessConfiguration: AWS = {
             ReadCapacityUnits: 1,
             WriteCapacityUnits: 1
           },
-
+        }
+      },
+      FeatureFlagsTable: {
+        Type: "AWS::DynamoDB::Table",
+        Properties: {
+          TableName: "FeatureFlagsTable",
+          AttributeDefinitions: [
+            {
+              AttributeName: "pk",
+              AttributeType: "S",
+            },
+            {
+              AttributeName: "sk",
+              AttributeType: "S",
+            }
+          ],
+          KeySchema: [
+            {
+              AttributeName: "pk",
+              KeyType: "HASH"
+            },
+            {
+              AttributeName: "sk",
+              KeyType: "RANGE"
+            }
+          ],
+          ProvisionedThroughput: {
+            ReadCapacityUnits: 5,
+            WriteCapacityUnits: 5
+          },
+          TimeToLiveSpecification: {
+            AttributeName: "ttl",
+            Enabled: false
+          }
         }
       }
     }

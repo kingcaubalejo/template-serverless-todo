@@ -13,6 +13,21 @@ const TodoSchema = z.object({
     createdAt: z.string(),
 });
 
+// Custom error classes for better error handling
+export class TodoNotFoundError extends Error {
+    constructor(todoId: string) {
+        super(`Todo with id ${todoId} not found`);
+        this.name = 'TodoNotFoundError';
+    }
+}
+
+export class TodoValidationError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'TodoValidationError';
+    }
+}
+
 export class TodoRepository {
     constructor(private readonly docClient: DynamoDBClient, private readonly tableName: string) {}
   
@@ -21,88 +36,125 @@ export class TodoRepository {
       const parsed = TodoSchema.safeParse(unmarshall(item));
       if (!parsed.success) {
         console.warn("Invalid Todo item:", parsed.error);
-        throw new Error("Invalid data shape for Todo");
+        throw new TodoValidationError("Invalid data shape for Todo");
       }
       return parsed.data;
     }
+
+    private mapToDynamo(todo: Todo): Record<string, any> {
+        return {
+            todosId: { S: todo.todosId },
+            title: { S: todo.title },
+            description: { S: todo.description },
+            status: { BOOL: todo.status },
+            createdAt: { S: todo.createdAt },
+        };
+    }
   
     async getAll(): Promise<Todo[]> {
-      const result = await this.docClient.send(new ScanCommand({ TableName: this.tableName }));
-      return (result.Items ?? []).map(item => this.mapFromDynamo(item));
+      try {
+        const result = await this.docClient.send(new ScanCommand({ TableName: this.tableName }));
+        return (result.Items ?? []).map(item => this.mapFromDynamo(item));
+      } catch (error) {
+        console.error("Error fetching all todos:", error);
+        throw new Error("Failed to fetch todos");
+      }
     }
 
     async get(todoId: string): Promise<Todo> {
-        const input = {
-            ExpressionAttributeValues: {
-              ":todoId": {
-                S: todoId
-              }
-            },
-            KeyConditionExpression: "todosId = :todoId",
-            TableName: this.tableName
-          };
-      const result = await this.docClient.send(new QueryCommand(input));
-      return this.mapFromDynamo(result.Items[0]);
-    }
-
-    async createTodo(todo: Todo): Promise<any> {
-        const item: PutItemCommandInput = {
-            Item: {
-                todosId: { S: todo.todosId } ,
-                title: { S: todo.title },
-                description: { S: todo.description },
-                status: { BOOL: todo.status },
-                createdAt: { S: todo.createdAt },
-            },
-            TableName: this.tableName,
-            ReturnConsumedCapacity: "TOTAL",
-            ReturnValues: "ALL_OLD"
+        try {
+            const input = {
+                ExpressionAttributeValues: {
+                  ":todoId": { S: todoId }
+                },
+                KeyConditionExpression: "todosId = :todoId",
+                TableName: this.tableName
+            };
+            const result = await this.docClient.send(new QueryCommand(input));
+            
+            if (!result.Items || result.Items.length === 0) {
+                throw new TodoNotFoundError(todoId);
+            }
+            
+            return this.mapFromDynamo(result.Items[0]);
+        } catch (error) {
+            if (error instanceof TodoNotFoundError) {
+                throw error;
+            }
+            console.error("Error fetching todo:", error);
+            throw new Error("Failed to fetch todo");
         }
-        const result: PutItemCommandOutput = await this.docClient.send(new PutItemCommand(item));
-        return result.$metadata;
     }
 
-    async updateTodo(id: string, todo: Partial<Todo>): Promise<any> {
-      const params: UpdateItemCommandInput = {
-        TableName: this.tableName,
-        Key: {
-          todosId: { S: id },
-        },
-        UpdateExpression: "SET #title = :name, #description = :description",
-        ExpressionAttributeNames: {
-          "#title": "title",
-          "#description": "description",
-        },
-        ExpressionAttributeValues: {
-          ":name": { S: todo.title }, 
-          ":description": { S: todo.description },
-        },
-        ReturnValues: "ALL_NEW", 
-      };
-    
-      try {
-        const command = new UpdateItemCommand(params);
-        const data: UpdateItemCommandOutput = await this.docClient.send(command);
-        console.info("Item updated successfully:", data);
-        return data;
-      } catch (error) {
-        console.error("Error updating item:", error);
-        throw error;
-      }
+    async createTodo(todo: Todo): Promise<Todo> {
+        try {
+            const item: PutItemCommandInput = {
+                Item: this.mapToDynamo(todo),
+                TableName: this.tableName,
+                ConditionExpression: "attribute_not_exists(todosId)",
+                ReturnConsumedCapacity: "TOTAL"
+            };
+            
+            await this.docClient.send(new PutItemCommand(item)) as PutItemCommandOutput;
+            return todo; // Return the created todo
+        } catch (error) {
+            console.error("Error creating todo:", error);
+            throw new Error("Failed to create todo");
+        }
+    }
+
+    async updateTodo(id: string, todo: Partial<Todo>): Promise<Todo> {
+        try {
+            // First, get the existing todo to merge with updates
+            const existingTodo = await this.get(id);
+            const updatedTodo: Todo = {
+                ...existingTodo,
+                ...todo,
+                todosId: id // Ensure ID doesn't change
+            };
+
+            const params: UpdateItemCommandInput = {
+                TableName: this.tableName,
+                Key: { todosId: { S: id } },
+                UpdateExpression: "SET #title = :title, #description = :description, #status = :status",
+                ExpressionAttributeNames: {
+                    "#title": "title",
+                    "#description": "description",
+                    "#status": "status"
+                },
+                ExpressionAttributeValues: {
+                    ":title": { S: updatedTodo.title },
+                    ":description": { S: updatedTodo.description },
+                    ":status": { BOOL: updatedTodo.status }
+                },
+                ConditionExpression: "attribute_exists(todosId)",
+                ReturnValues: "ALL_NEW"
+            };
+        
+            const result = await this.docClient.send(new UpdateItemCommand(params));
+            return this.mapFromDynamo(result.Attributes);
+        } catch (error) {
+            if (error instanceof TodoNotFoundError) {
+                throw error;
+            }
+            console.error("Error updating todo:", error);
+            throw new Error("Failed to update todo");
+        }
     }
     
-    async deleteTodo(id: string): Promise<any> {
-      const input: DeleteItemCommandInput = {
-        Key: {
-          todosId: {
-            S: id
-          },
-        },
-        TableName: this.tableName
-      };
-      const command = new DeleteItemCommand(input);
-      const response: DeleteItemCommandOutput = await this.docClient.send(command);
-      return response;
+    async deleteTodo(id: string): Promise<void> {
+        try {
+            const input: DeleteItemCommandInput = {
+                Key: { todosId: { S: id } },
+                TableName: this.tableName,
+                ConditionExpression: "attribute_exists(todosId)",
+                ReturnValues: "ALL_OLD"
+            };
+            
+            await this.docClient.send(new DeleteItemCommand(input));
+        } catch (error) {
+            console.error("Error deleting todo:", error);
+            throw new Error("Failed to delete todo");
+        }
     }
-    // Add other methods like getById, create, update, delete...
-  }
+}
