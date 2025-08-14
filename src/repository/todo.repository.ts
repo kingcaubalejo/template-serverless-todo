@@ -7,8 +7,8 @@ import Todo from '../model/Todo';
 
 const TodoSchema = z.object({
     todosId: z.string(),
-    title: z.string(),
-    description: z.string(),
+    title: z.string().min(1).max(100),
+    description: z.string().min(1).max(500),
     status: z.boolean(),
     createdAt: z.string(),
 });
