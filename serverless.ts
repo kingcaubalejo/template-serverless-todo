@@ -57,7 +57,11 @@ const serverlessConfiguration: AWS = {
         inMemory: true,
         migrate: true,
       },
-      stages: "dev"
+      stages: "dev",
+      encryption: {
+        enabled: true,
+        type: "KMS"
+      }
     }
   },
   resources: {
@@ -118,4 +122,4 @@ const serverlessConfiguration: AWS = {
   }
 };
 
-module.exports = serverlessConfiguration;
+export default serverlessConfiguration;
