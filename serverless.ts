@@ -122,4 +122,4 @@ const serverlessConfiguration: AWS = {
   }
 };
 
-export default serverlessConfiguration;
+module.exports = serverlessConfiguration;
