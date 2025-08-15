@@ -197,6 +197,10 @@ export function featureFlagMiddleware(flagName: string) {
         return {
           statusCode: 404,
           headers: {
+            'X-Content-Type-Options': 'nosniff',
+            'X-Frame-Options': 'DENY',
+            'X-XSS-Protection': '1; mode=block',
+            'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
           },
